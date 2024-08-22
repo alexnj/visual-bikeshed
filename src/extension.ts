@@ -11,16 +11,16 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       const document = editor.document;
-      if (document.languageId !== 'html') {
+      if (document.languageId !== 'bikeshed') {
         vscode.window.showInformationMessage(
-          'The active document is not an HTML file.'
+          'The active document is not a Bikeshed file.'
         );
         return;
       }
 
       const panel = vscode.window.createWebviewPanel(
-        'htmlPreview',
-        'HTML Preview',
+        'visualBikeshed',
+        'Bikeshed Preview',
         vscode.ViewColumn.Beside,
         {
           enableScripts: true,
@@ -28,8 +28,8 @@ export function activate(context: vscode.ExtensionContext) {
       );
 
       const updateWebview = () => {
-        const htmlContent = document.getText();
-        panel.webview.html = getWebviewContent(htmlContent);
+        const bsmd = document.getText();
+        panel.webview.html = getWebviewContent(bsmd);
       };
 
       updateWebview();
@@ -54,17 +54,17 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-function getWebviewContent(htmlContent: string): string {
+function getWebviewContent(bsmd: string): string {
   return `<!DOCTYPE html>
     <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>HTML Preview</title>
+        <title>Bikeshed Preview</title>
       </head>
       <body>
         Wow.
-        ${htmlContent}
+        ${bsmd}
       </body>
     </html>`;
 }

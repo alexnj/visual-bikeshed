@@ -1,0 +1,36 @@
+{
+  "scopeName": "source.bikeshed",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#keywords"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.bikeshed",
+          "begin": "//",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.bikeshed"
+            }
+          },
+          "end": "$",
+          "name": "comment.line.double-slash.bikeshed"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.bikeshed",
+          "match": "\\b(keyword1|keyword2|keyword3)\\b"
+        }
+      ]
+    }
+  }
+}

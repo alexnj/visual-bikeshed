@@ -19,6 +19,26 @@
         "command": "extension.showHtmlPreview",
         "title": "Show HTML Preview"
       }
+    ],
+    "languages": [
+      {
+        "id": "bikeshed",
+        "aliases": [
+          "Bikeshed",
+          "bikeshed"
+        ],
+        "extensions": [
+          ".bs"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bikeshed",
+        "scopeName": "source.bikeshed",
+        "path": "./syntaxes/bikeshed.tmLanguage.json"
+      }
     ]
   },
   "scripts": {
