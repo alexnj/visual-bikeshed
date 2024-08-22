@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
+import axios from 'axios';
 
 export function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
-    'extension.showHtmlPreview',
+    'extension.showBikeshedPreview',
     () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
@@ -18,15 +19,18 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const config = vscode.workspace.getConfiguration('visualBikeshed');
+      const config = vscode.workspace.getConfiguration('bikeshedPreview');
       const autoUpdate = config.get<boolean>('autoUpdate', true);
       const previewTitle = config.get<string>(
         'previewTitle',
-        'Visual Bikeshed'
+        'Bikeshed Preview'
       );
       const compilerOption = config.get<string>('compilerOption', 'URL');
       const commandPath = config.get<string>('commandPath', '');
-      const processorUrl = config.get<string>('processorUrl', '');
+      const processorUrl = config.get<string>(
+        'processorUrl',
+        'https://api.csswg.org/bikeshed/'
+      );
 
       const panel = vscode.window.createWebviewPanel(
         'visualBikeshed',
@@ -37,14 +41,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
       );
 
-      const updateWebview = () => {
+      const updateWebview = async () => {
         const bsmd = document.getText();
-        panel.webview.html = getWebviewContent(
-          bsmd,
-          compilerOption,
-          commandPath,
-          processorUrl
-        );
+        const htmlContent = await getProcessedContent(bsmd, processorUrl);
+        panel.webview.html = getWebviewContent(htmlContent);
       };
 
       updateWebview();
@@ -71,12 +71,27 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-function getWebviewContent(
-  htmlContent: string,
-  compilerOption: string,
-  commandPath: string,
+async function getProcessedContent(
+  content: string,
   processorUrl: string
-): string {
+): Promise<string> {
+  try {
+    const formData = new FormData();
+    formData.append('file', new Blob([content]), 'file.bs');
+    formData.append('force', '1');
+    const response = await axios.post(processorUrl, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error processing content:', error + processorUrl);
+    return `<p>Error processing content: ${error.message}</p>`;
+  }
+}
+
+function getWebviewContent(htmlContent: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
