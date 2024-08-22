@@ -39,7 +39,42 @@
         "scopeName": "source.bikeshed",
         "path": "./syntaxes/bikeshed.tmLanguage.json"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Visual Bikeshed Configuration",
+      "properties": {
+        "visualBikeshed.autoUpdate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically update the preview when the document changes."
+        },
+        "visualBikeshed.previewTitle": {
+          "type": "string",
+          "default": "Bikeshed Preview",
+          "description": "Title of the preview panel."
+        },
+        "visualBikeshed.compilerOption": {
+          "type": "string",
+          "enum": [
+            "URL",
+            "Path"
+          ],
+          "default": "URL",
+          "description": "Bikeshed compiler option: URL or Path."
+        },
+        "visualBikeshed.commandPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the Bikeshed command."
+        },
+        "visualBikeshed.processorUrl": {
+          "type": "string",
+          "default": "https://api.csswg.org/bikeshed/",
+          "description": "URL of the Bikeshed processor."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
