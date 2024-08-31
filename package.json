@@ -58,14 +58,14 @@
           "type": "string",
           "enum": [
             "URL",
-            "Path"
+            "Shell"
           ],
           "default": "URL",
           "description": "Bikeshed compiler option: URL or Path."
         },
         "visualBikeshed.commandPath": {
           "type": "string",
-          "default": "",
+          "default": "bikeshed",
           "description": "Path to the Bikeshed command."
         },
         "visualBikeshed.processorUrl": {
