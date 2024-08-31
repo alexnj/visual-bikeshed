@@ -3,14 +3,79 @@ import axios from 'axios';
 import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { parseStringPromise } from 'xml2js';
 
 const PREVIEW_UPDATE_DEBOUNCE_TIME = 500;
+type BikeshedErrorOutput = {
+  root: {
+    warning?: string[];
+    fatal?: string[];
+    linkerror?: string[];
+    message?: string[];
+  };
+};
 
-function notify(message: string, type: 'error' | 'info' = 'info'): void {
-  if (type === 'error') {
-    vscode.window.showErrorMessage(message);
-  } else {
-    vscode.window.showInformationMessage(message);
+type VSCodeNotifyType = 'error' | 'info' | 'warning';
+
+function notify(message: string, type: VSCodeNotifyType = 'info'): void {
+  switch (type) {
+    case 'error':
+      vscode.window.showErrorMessage(message);
+      break;
+    case 'warning':
+      vscode.window.showWarningMessage(message);
+      break;
+    default:
+      vscode.window.showInformationMessage(message);
+  }
+}
+
+async function parseErrors(xml: string): Promise<BikeshedErrorOutput> {
+  try {
+    const result = await parseStringPromise(xml);
+    console.log('parsed=', result);
+    return result;
+  } catch (error) {
+    return { root: { fatal: [xml] } };
+  }
+}
+
+function notifyUserOfErrors(errors: BikeshedErrorOutput): void {
+  const messages: [string, VSCodeNotifyType][] = [];
+  if (errors.root.fatal) {
+    messages.push(
+      ...errors.root.fatal.map((msg): [string, VSCodeNotifyType] => [
+        msg,
+        'error',
+      ])
+    );
+  }
+  if (errors.root.warning) {
+    messages.push(
+      ...errors.root.warning.map((msg): [string, VSCodeNotifyType] => [
+        msg,
+        'warning',
+      ])
+    );
+  }
+  if (errors.root.linkerror) {
+    messages.push(
+      ...errors.root.linkerror.map((msg): [string, VSCodeNotifyType] => [
+        msg,
+        'error',
+      ])
+    );
+  }
+  if (errors.root.message) {
+    messages.push(
+      ...errors.root.message.map((msg): [string, VSCodeNotifyType] => [
+        msg,
+        'info',
+      ])
+    );
+  }
+  for (const [message, status] of messages) {
+    notify(message, status);
   }
 }
 
@@ -157,11 +222,13 @@ async function getProcessedContentWithShell(
 
   return new Promise((resolve, reject) => {
     exec(
-      `${commandPath} spec ${tempFilePath} ${outputFilePath}`,
+      `${commandPath} --print=markup spec ${tempFilePath} ${outputFilePath}`,
       (error, stdout, stderr) => {
         if (error) {
-          console.error('Error processing content with shell:', error);
-          reject(error.message);
+          parseErrors(`<root>${stdout}</root>`).then((errors) => {
+            notifyUserOfErrors(errors);
+            reject(error.message);
+          });
           return;
         }
 
