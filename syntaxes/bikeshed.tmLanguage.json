@@ -6,6 +6,15 @@
     },
     {
       "include": "#keywords"
+    },
+    {
+      "include": "#autolink-wrapper-dfn"
+    },
+    {
+      "include": "#autolink-wrapper-dfn-abstract-op"
+    },
+    {
+      "include": "#autolink-wrapper-idl"
     }
   ],
   "repository": {
@@ -13,13 +22,13 @@
       "patterns": [
         {
           "name": "comment.line.double-slash.bikeshed",
-          "begin": "//",
+          "begin": "<!--",
           "beginCaptures": {
             "0": {
               "name": "punctuation.definition.comment.bikeshed"
             }
           },
-          "end": "$"
+          "end": "-->"
         }
       ]
     },
@@ -28,6 +37,66 @@
         {
           "name": "keyword.control.bikeshed",
           "match": "\\b(keyword1|keyword2|keyword3)\\b"
+        }
+      ]
+    },
+    "autolink-wrapper-dfn": {
+      "patterns": [
+        {
+          "name": "dfn.link.bikeshed",
+          "begin": "\\[=",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.link.begin.bikeshed"
+            }
+          },
+          "end": "=\\]",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.link.end.bikeshed"
+            }
+          },
+          "contentName": "entity.name.tag.link.bikeshed"
+        }
+      ]
+    },
+    "autolink-wrapper-dfn-abstract-op": {
+      "patterns": [
+        {
+          "name": "abstract-op.dfn.link.bikeshed",
+          "begin": "\\[\\$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.link.begin.bikeshed"
+            }
+          },
+          "end": "\\$\\]",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.link.end.bikeshed"
+            }
+          },
+          "contentName": "entity.name.tag.link.bikeshed"
+        }
+      ]
+    },
+    "autolink-wrapper-idl": {
+      "patterns": [
+        {
+          "name": "idl.link.bikeshed",
+          "begin": "{{",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.link.begin.bikeshed"
+            }
+          },
+          "end": "}}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.link.end.bikeshed"
+            }
+          },
+          "contentName": "entity.name.tag.link.bikeshed"
         }
       ]
     }

@@ -24,6 +24,7 @@ connection.onInitialize((params: InitializeParams) => {
       // Tell the client that this server supports code completion.
       completionProvider: {
         resolveProvider: true,
+        triggerCharacters: ['{', '[', '='],
       },
     },
   };
@@ -32,41 +33,38 @@ connection.onInitialize((params: InitializeParams) => {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-  (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    console.log(_textDocumentPosition);
-    return [
-      {
-        label: 'dfn',
-        kind: CompletionItemKind.Keyword,
-        data: 1,
-      },
-      {
-        label: 'link',
-        kind: CompletionItemKind.Keyword,
-        data: 2,
-      },
-      {
-        label: 'issue',
-        kind: CompletionItemKind.Keyword,
-        data: 3,
-      },
-    ];
+  (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+    const document = documents.get(textDocumentPosition.textDocument.uri);
+    if (!document) {
+      return [];
+    }
+
+    const text = document.getText();
+    const definitions = extractDefinitions(text);
+
+    return definitions.map((def) => ({
+      label: def,
+      kind: CompletionItemKind.Text,
+      data: def,
+    }));
   }
 );
+
+function extractDefinitions(text: string): string[] {
+  const definitionRegex = /{{([^}]+)}}/g;
+  const definitions = new Set<string>();
+  let match;
+  while ((match = definitionRegex.exec(text)) !== null) {
+    definitions.add(match[1]);
+  }
+  return Array.from(definitions);
+}
 
 // This handler resolves additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  if (item.data === 1) {
-    item.detail = 'Bikeshed Definition';
-    item.documentation = 'Defines a term in Bikeshed.';
-  } else if (item.data === 2) {
-    item.detail = 'Bikeshed Link';
-    item.documentation = 'Creates a link in Bikeshed.';
-  } else if (item.data === 3) {
-    item.detail = 'Bikeshed Issue';
-    item.documentation = 'Marks an issue in Bikeshed.';
-  }
+  item.detail = 'Bikeshed Autolink';
+  item.documentation = `Autolink for definition: ${item.data}`;
   return item;
 });
 
