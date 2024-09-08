@@ -1,0 +1,19 @@
+{
+  "name": "visual-bikeshed-client",
+  "description": "Visual Bikeshed Client Extension",
+  "author": "Alex N. Jose <alexnj@gmail.com> (https://alexnj.com/)",
+  "license": "MIT",
+  "version": "0.0.1",
+  "publisher": "",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1",
+    "axios": "^1.7.4",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.1"
+  }
+}

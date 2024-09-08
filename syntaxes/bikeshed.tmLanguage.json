@@ -19,8 +19,7 @@
               "name": "punctuation.definition.comment.bikeshed"
             }
           },
-          "end": "$",
-          "name": "comment.line.double-slash.bikeshed"
+          "end": "$"
         }
       ]
     },

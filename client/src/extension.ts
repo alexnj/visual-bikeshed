@@ -4,6 +4,14 @@ import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { parseStringPromise } from 'xml2js';
+import {
+  LanguageClient,
+  LanguageClientOptions,
+  ServerOptions,
+  TransportKind,
+} from 'vscode-languageclient/node';
+
+let client: LanguageClient;
 
 const PREVIEW_UPDATE_DEBOUNCE_TIME = 500;
 type BikeshedErrorOutput = {
@@ -106,7 +114,56 @@ function throttle<T extends (...args: any[]) => void>(
   } as T;
 }
 
+export function activateLanguageClientExtension(
+  context: vscode.ExtensionContext
+) {
+  // The server is implemented in node
+  let serverModule = context.asAbsolutePath(
+    path.join('server', 'out', 'server.js')
+  );
+
+  // The debug options for the server
+  let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
+
+  // If the extension is launched in debug mode then the debug server options are used
+  // Otherwise the run options are used
+  let serverOptions: ServerOptions = {
+    run: { module: serverModule, transport: TransportKind.ipc },
+    debug: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+      options: debugOptions,
+    },
+  };
+
+  // Options to control the language client
+  let clientOptions: LanguageClientOptions = {
+    // Register the server for Bikeshed documents
+    documentSelector: [{ scheme: 'file', language: 'bikeshed' }],
+    synchronize: {
+      // Notify the server about file changes to '.clientrc files contained in the workspace
+      fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc'),
+    },
+  };
+
+  // Create the language client and start the client.
+  client = new LanguageClient(
+    'bikeshedLanguageServer',
+    'Bikeshed Language Server',
+    serverOptions,
+    clientOptions
+  );
+
+  // Start the client. This will also launch the server
+  client.start();
+}
+
 export function activate(context: vscode.ExtensionContext) {
+  activateLanguageClientExtension(context);
+  activatePreviewExtension(context);
+}
+
+export function activatePreviewExtension(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
     'extension.showBikeshedPreview',
     () => {
@@ -265,4 +322,9 @@ function getWebviewContent(htmlContent: string): string {
 </html>`;
 }
 
-export function deactivate() {}
+export function deactivate() {
+  if (!client) {
+    return undefined;
+  }
+  return client.stop();
+}
