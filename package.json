@@ -14,7 +14,7 @@
   "activationEvents": [
     "onLanguage:bikeshed"
   ],
-  "main": "./dist/extension",
+  "main": "./client/out/extension",
   "contributes": {
     "commands": [
       {

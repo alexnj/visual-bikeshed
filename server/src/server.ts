@@ -34,6 +34,7 @@ connection.onInitialize((params: InitializeParams) => {
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
   (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+    console.log('server.onCompletion', textDocumentPosition);
     const document = documents.get(textDocumentPosition.textDocument.uri);
     if (!document) {
       return [];
