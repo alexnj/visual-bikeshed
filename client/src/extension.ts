@@ -7,14 +7,14 @@ import {
 import { BikeshedCompletionItemProvider } from './local-completion-item-provider';
 
 export function activate(context: vscode.ExtensionContext) {
-  activateLanguageClient(context);
   activatePreview(context);
+
   // Register the completion item provider
-  console.log('activate');
+  let languageClient = activateLanguageClient(context);
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       { scheme: 'file', language: 'bikeshed' },
-      new BikeshedCompletionItemProvider(),
+      new BikeshedCompletionItemProvider(languageClient),
       '{' // Trigger completion when typing '{'
     )
   );

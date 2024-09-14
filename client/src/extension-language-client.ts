@@ -49,6 +49,7 @@ export function activateLanguageClient(context: vscode.ExtensionContext) {
 
   // Start the client. This will also launch the server
   client.start();
+  return client;
 }
 
 export async function deactivateLanguageClient(): Promise<void> {
