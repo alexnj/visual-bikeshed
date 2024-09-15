@@ -24,26 +24,28 @@ export class BikeshedCompletionItemProvider
   async fetchLanguageCompletion(
     input: string
   ): Promise<vscode.CompletionItem[]> {
-    return new Promise(async (resolve) => {
-      let client = this.client;
-      return client
-        .sendRequest<CompletionRPCItem[]>('completions', {
-          input,
-        })
-        .then((completionRpcItems) => {
-          const mappedItems = completionRpcItems.map((rpcItem) => {
-            const item = new vscode.CompletionItem(
-              rpcItem.label,
-              vscode.CompletionItemKind.Reference
-            );
-            item.detail = rpcItem.detail;
-            item.documentation = rpcItem.description;
-            item.insertText = rpcItem.insertText || rpcItem.label;
-            return item;
-          });
-          resolve(mappedItems);
-        });
+    const completionRpcItems = await this.client.sendRequest<
+      CompletionRPCItem[]
+    >('completions', {
+      input,
     });
+    const mappedItems = completionRpcItems.map((rpcItem) => {
+      const item = new vscode.CompletionItem(
+        rpcItem.label,
+        vscode.CompletionItemKind.Reference
+      );
+      item.detail = rpcItem.detail;
+      const documentation = new vscode.MarkdownString(
+        `${rpcItem.description}`,
+        true
+      );
+      documentation.supportHtml = true;
+      item.documentation = documentation;
+
+      item.insertText = rpcItem.insertText || rpcItem.label;
+      return item;
+    });
+    return mappedItems;
   }
 
   async getLocalCompletions(
@@ -52,20 +54,17 @@ export class BikeshedCompletionItemProvider
   ): Promise<vscode.CompletionItem[]> {
     const text = document.getText();
     const definitions = extractDefinitions(text);
-
-    return new Promise(async (resolve) => {
-      const completionItems: vscode.CompletionItem[] = definitions.map(
-        (def): vscode.CompletionItem => {
-          const item = new vscode.CompletionItem(
-            def,
-            vscode.CompletionItemKind.Text
-          );
-          item.detail = 'Local link';
-          return item;
-        }
-      );
-      resolve(completionItems);
-    });
+    const completionItems: vscode.CompletionItem[] = definitions.map(
+      (def): vscode.CompletionItem => {
+        const item = new vscode.CompletionItem(
+          def,
+          vscode.CompletionItemKind.Text
+        );
+        item.detail = 'Local link';
+        return item;
+      }
+    );
+    return completionItems;
   }
 
   provideCompletionItems(
