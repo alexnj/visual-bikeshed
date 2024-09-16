@@ -45,7 +45,12 @@ async function updateWebview(
       try {
         if (compilerOption === 'URL') {
           progress.report({ message: `with ${processorUrl}` });
-          htmlContent = await getProcessedContent(token, bsmd, processorUrl);
+          htmlContent = await getProcessedContent(
+            token,
+            progress,
+            bsmd,
+            processorUrl
+          );
         } else {
           progress.report({ message: `with ${commandPath}` });
           htmlContent = await getProcessedContentWithShell(
@@ -201,25 +206,44 @@ function notifyUserOfErrors(errors: BikeshedErrorOutput): void {
 
 async function getProcessedContent(
   token: CancellationToken,
+  progress: vscode.Progress<{
+    message?: string;
+    increment?: number;
+  }>,
   content: string,
   processorUrl: string
 ): Promise<string> {
-  return new Promise((resolve, reject) => async () => {
-    try {
-      const formData = new FormData();
-      formData.append('file', new Blob([content]), 'file.bs');
-      formData.append('force', '1');
-      const response = await axios.post(processorUrl, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+  const formData = new FormData();
+  formData.append('file', new Blob([content]), 'file.bs');
+  formData.append('force', '1');
+  const response = await axios.post(processorUrl, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    onUploadProgress: (progressEvent) => {
+      const percentCompleted = Math.round(
+        progressEvent.total
+          ? (progressEvent.loaded / progressEvent.total) * 50
+          : 0
+      );
+      progress.report({
+        increment: percentCompleted,
+        message: `Uploading to ${processorUrl}`,
       });
-      resolve(response.data);
-    } catch (error: any) {
-      console.error('Error processing content:', error);
-      reject(error.message);
-    }
+    },
+    onDownloadProgress: (progressEvent) => {
+      const percentCompleted = Math.round(
+        progressEvent.total
+          ? (progressEvent.loaded / progressEvent.total) * 50
+          : 0
+      );
+      progress.report({
+        increment: 50 + percentCompleted,
+        message: `Downloading compiled output from ${processorUrl}`,
+      });
+    },
   });
+  return response.data;
 }
 
 async function getProcessedContentWithShell(
