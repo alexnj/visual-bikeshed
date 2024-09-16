@@ -1,10 +1,12 @@
 # Visual Bikeshed
 
-<img src="https://raw.githubusercontent.com/alexnj/visual-bikeshed/main/visual-bikeshed.svg" width=100 height=100 align=left>
+<img src="https://raw.githubusercontent.com/alexnj/visual-bikeshed/main/visual-bikeshed.png" width=200 height=200 align=left>
 
 Visual Studio Code extension for [Bikeshed](https://github.com/speced/bikeshed) that strives to provide a better and integrated authoring experience for spec authors, including a side-by-side preview and language features like autocompletion.
 
 This plugin is currently in Beta and under active development. There may be bugs. Please file an issue. Pull requests are always welcome!
+
+<br>
 
 ## Features
 
