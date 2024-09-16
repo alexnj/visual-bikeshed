@@ -7,6 +7,7 @@
     "vscode": "^1.92.0"
   },
   "author": "Alex N. Jose <alexnj@gmail.com> (https://alexnj.com/)",
+  "repository": "https://github.com/alexnj/visual-bikeshed",
   "license": "MIT",
   "categories": [
     "Other"
