@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import { window, ProgressLocation, CancellationToken } from 'vscode';
+
 import { notify } from './notify';
 import type { VSCodeNotifyType } from './notify';
 import axios from 'axios';
@@ -17,6 +19,50 @@ type BikeshedErrorOutput = {
     message?: string[];
   };
 };
+
+async function updateWebview(
+  context: vscode.ExtensionContext,
+  document: vscode.TextDocument,
+  panel: vscode.WebviewPanel
+) {
+  window.withProgress(
+    {
+      location: ProgressLocation.Notification,
+      title: 'Compiling',
+      cancellable: true,
+    },
+    async (progress, token) => {
+      const config = vscode.workspace.getConfiguration('visualBikeshed');
+      progress.report({ message: `Analyzing document` });
+      const bsmd = document.getText();
+      const compilerOption = config.get<string>('compilerOption', 'URL');
+      const commandPath = config.get<string>('commandPath', 'bikeshed');
+      const processorUrl = config.get<string>(
+        'processorUrl',
+        'https://api.csswg.org/bikeshed/'
+      );
+      let htmlContent = '';
+      try {
+        if (compilerOption === 'URL') {
+          progress.report({ message: `with ${processorUrl}` });
+          htmlContent = await getProcessedContent(token, bsmd, processorUrl);
+        } else {
+          progress.report({ message: `with ${commandPath}` });
+          htmlContent = await getProcessedContentWithShell(
+            token,
+            bsmd,
+            commandPath
+          );
+        }
+      } catch (error: any) {
+        console.error('error occurred', error);
+        notify(error, 'error');
+      }
+      progress.report({ message: `Rendering output` });
+      panel.webview.html = getWebviewContent(htmlContent);
+    }
+  );
+}
 
 export function activatePreview(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
@@ -50,39 +96,17 @@ export function activatePreview(context: vscode.ExtensionContext) {
         }
       );
 
-      const updateWebview = throttle(async () => {
-        const bsmd = document.getText();
-        autoUpdate = config.get<boolean>('autoUpdate', true);
-        const compilerOption = config.get<string>('compilerOption', 'URL');
-        const commandPath = config.get<string>('commandPath', 'bikeshed');
-        const processorUrl = config.get<string>(
-          'processorUrl',
-          'https://api.csswg.org/bikeshed/'
-        );
-
-        let htmlContent = '';
-        try {
-          if (compilerOption === 'URL') {
-            console.log('Processing with URL:', processorUrl);
-            htmlContent = await getProcessedContent(bsmd, processorUrl);
-          } else {
-            console.log('Processing with shell:', commandPath);
-            htmlContent = await getProcessedContentWithShell(bsmd, commandPath);
-          }
-        } catch (error: any) {
-          console.error('error occurred', error);
-          notify(error, 'error');
-        }
-        panel.webview.html = getWebviewContent(htmlContent);
-      }, PREVIEW_UPDATE_DEBOUNCE_TIME);
-
-      updateWebview();
+      updateWebview(context, document, panel);
 
       if (autoUpdate) {
         const changeDocumentSubscription =
-          vscode.workspace.onDidChangeTextDocument((e) => {
-            if (e.document.uri.toString() === document.uri.toString()) {
-              updateWebview();
+          vscode.workspace.onDidSaveTextDocument((savedDocument) => {
+            if (savedDocument.uri.toString() === document.uri.toString()) {
+              const throttledUpdate = throttle(
+                updateWebview,
+                PREVIEW_UPDATE_DEBOUNCE_TIME
+              );
+              throttledUpdate(context, document, panel);
             }
           });
 
@@ -176,6 +200,7 @@ function notifyUserOfErrors(errors: BikeshedErrorOutput): void {
 }
 
 async function getProcessedContent(
+  token: CancellationToken,
   content: string,
   processorUrl: string
 ): Promise<string> {
@@ -198,6 +223,7 @@ async function getProcessedContent(
 }
 
 async function getProcessedContentWithShell(
+  token: CancellationToken,
   content: string,
   commandPath: string
 ): Promise<string> {
@@ -208,7 +234,7 @@ async function getProcessedContentWithShell(
   fs.writeFileSync(tempFilePath, content);
 
   return new Promise((resolve, reject) => {
-    exec(
+    const childProcess = exec(
       `${commandPath} --print=markup spec ${tempFilePath} ${outputFilePath}`,
       (error, stdout, stderr) => {
         if (error) {
@@ -235,6 +261,8 @@ async function getProcessedContentWithShell(
         });
       }
     );
+
+    token.onCancellationRequested((_) => childProcess.kill());
   });
 }
 

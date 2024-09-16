@@ -29,6 +29,7 @@ export class BikeshedCompletionItemProvider
     >('completions', {
       input,
     });
+
     const mappedItems = completionRpcItems.map((rpcItem) => {
       const item = new vscode.CompletionItem(
         rpcItem.label,
@@ -60,7 +61,7 @@ export class BikeshedCompletionItemProvider
           def,
           vscode.CompletionItemKind.Text
         );
-        item.detail = 'Local link';
+        item.detail = 'Current document';
         return item;
       }
     );
@@ -107,11 +108,20 @@ export class BikeshedCompletionItemProvider
 }
 
 function extractDefinitions(text: string): string[] {
-  const definitionRegex = /\|([^\|]+)\|/g;
+  const interestedTags = new Set<string>(['dfn', 'var']);
+  const definitionRegex =
+    /<(?<tag>[a-zA-Z][a-zA-Z0-9]*)[^>]*>(?<text>[^<]*)<\/\k<tag>>/g;
   const definitions = new Set<string>();
-  let match;
+  let match: RegExpExecArray | null;
   while ((match = definitionRegex.exec(text)) !== null) {
-    definitions.add(match[1]);
+    if (
+      match.groups &&
+      match.groups.tag &&
+      interestedTags.has(match.groups.tag)
+    ) {
+      // TODO: do more involved processing of each tag later.
+      definitions.add(match.groups.text);
+    }
   }
   return Array.from(definitions);
 }
