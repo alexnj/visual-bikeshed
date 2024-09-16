@@ -1,16 +1,26 @@
 {
   "name": "visual-bikeshed",
   "displayName": "Visual Bikeshed",
-  "description": "",
-  "version": "0.0.1",
+  "description": "Language support, autocompletion, side-by-side preview and other features for Bikeshed spec authors.",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.92.0"
   },
   "author": "Alex N. Jose <alexnj@gmail.com> (https://alexnj.com/)",
   "repository": "https://github.com/alexnj/visual-bikeshed",
   "license": "MIT",
+  "publisher": "alexnj",
+  "icon": "visual-bikeshed.png",
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Snippets",
+    "Language Packs"
+  ],
+  "keywords": [
+    "bikeshed",
+    "spec",
+    "webref",
+    "w3c"
   ],
   "activationEvents": [
     "onLanguage:bikeshed"

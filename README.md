@@ -31,13 +31,11 @@ This extension contributes the following settings:
 
 ## Release Notes
 
-### 0.0.1
+### 0.0.1 - 0.0.2
 
-Initial release of Visual Bikeshed.
+Initial releases of Visual Bikeshed.
 
 ## For more information
 
 - [Bikeshed Documentation](https://speced.github.io/bikeshed)
 - [WebRef repository](https://github.com/w3c/webref)
-
-**Enjoy!**

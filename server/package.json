@@ -1,6 +1,6 @@
 {
   "name": "visual-bikeshed-language-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Alex N. Jose <alexnj@gmail.com> (https://alexnj.com/)",
   "license": "MIT",
   "main": "out/server.js",
