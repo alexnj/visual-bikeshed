@@ -1,71 +1,43 @@
-# visual-bikeshed README
+# Visual Bikeshed
 
-This is the README for your extension "visual-bikeshed". After writing up a brief description, we recommend including the following sections.
+<img src="https://raw.githubusercontent.com/alexnj/visual-bikeshed/main/visual-bikeshed.svg" width=100 height=100 align=left>
+
+Visual Studio Code extension for [Bikeshed](https://github.com/speced/bikeshed) that strives to provide a better and integrated authoring experience for spec authors.
+
+This plugin is currently in Beta and under active development. There may be bugs. Please file an issue. Pull requests are always welcome!
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- Bikeshed side-by-side preview within Visual Studio Code.
+- Compilation support via [local Bikeshed install](https://speced.github.io/bikeshed/#installing) or through [a remote CGI](https://api.csswg.org/bikeshed/).
+- IntelliSense / autocompletion support for W3C webref definitions and definitions within the document.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Local Bikeshed installation if you want faster and local compilation (preferred method). Follow [ Bikeshed installation steps](https://speced.github.io/bikeshed/#installing).
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-- `myExtension.enable`: Enable/disable this extension.
-- `myExtension.thing`: Set to `blah` to do something.
+- `visualBikeshed.autoUpdate`: Automatically update the preview when the document changes.
+- `visualBikeshed.compilerOption`: Selects a compilation method (URL or Bikeshed binary path).
+- `visualBikeshed.commandPath`: Path to the Bikeshed binary, for local compilation.
+- `visualBikeshed.processorUrl`: URL of the Bikeshed processor (defaults to `https://api.csswg.org/bikeshed/`).
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- W3C WebRef index is a work in progress.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-- [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-- Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-- Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-- Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+Initial release of Visual Bikeshed.
 
 ## For more information
 
-- [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-- [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+- [Bikeshed Documentation](https://speced.github.io/bikeshed)
+- [WebRef repository](https://github.com/w3c/webref)
 
 **Enjoy!**

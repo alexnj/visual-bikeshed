@@ -3,9 +3,6 @@ import {
   TextDocuments,
   ProposedFeatures,
   InitializeParams,
-  CompletionItem,
-  CompletionItemKind,
-  TextDocumentPositionParams,
   InitializeResult,
   TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
