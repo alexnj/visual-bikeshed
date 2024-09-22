@@ -8,7 +8,7 @@ import { BikeshedCompletionItemProvider } from './local-completion-item-provider
 import { extractTokens, type Token } from './token-extractor';
 import { BikeshedDocumentSymbolProvider } from './document-symbol-provider';
 
-const DocumentTokens = new WeakMap<vscode.TextDocument, Token[]>();
+const documentTokens = new WeakMap<vscode.TextDocument, Token[]>();
 
 export function activate(context: vscode.ExtensionContext) {
   activatePreview(context);
@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       { scheme: 'file', language: 'bikeshed' },
-      new BikeshedCompletionItemProvider(languageClient),
+      new BikeshedCompletionItemProvider(languageClient, documentTokens),
       '{',
       '[',
       '|'
@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerDocumentSymbolProvider(
       { language: 'bikeshed' },
-      new BikeshedDocumentSymbolProvider(DocumentTokens)
+      new BikeshedDocumentSymbolProvider(documentTokens)
     )
   );
 }
@@ -47,5 +47,5 @@ function handleTextDocumentChange(event: vscode.TextDocumentChangeEvent) {
     return;
   }
 
-  DocumentTokens.set(document, extractTokens(document));
+  documentTokens.set(document, extractTokens(document));
 }

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { extractTokens, type Token } from './token-extractor';
 import { LanguageClient } from 'vscode-languageclient/node';
 
 type CompletionRPCItem = {
@@ -9,16 +10,21 @@ type CompletionRPCItem = {
 };
 
 const LINK_WITH_BLOCK_REGEX = new RegExp(
-  /(?<entireLink>{{(?<search>[^}]+)}})/g
+  /(?<entireLink>{{(?<search>[^}]*)}})/g
 );
 
 export class BikeshedCompletionItemProvider
   implements vscode.CompletionItemProvider
 {
   private readonly client: LanguageClient;
+  private documentTokenMap: WeakMap<vscode.TextDocument, Token[]>;
 
-  public constructor(client: LanguageClient) {
+  public constructor(
+    client: LanguageClient,
+    tokenMap: WeakMap<vscode.TextDocument, Token[]>
+  ) {
     this.client = client;
+    this.documentTokenMap = tokenMap;
   }
 
   async fetchLanguageCompletion(
@@ -53,19 +59,27 @@ export class BikeshedCompletionItemProvider
     document: vscode.TextDocument,
     input: string
   ): Promise<vscode.CompletionItem[]> {
-    const text = document.getText();
-    const definitions = extractDefinitions(text);
-    const completionItems: vscode.CompletionItem[] = definitions.map(
-      (def): vscode.CompletionItem => {
+    return new Promise((resolve, reject) => {
+      if (!this.documentTokenMap.has(document)) {
+        // This document has not been processed.
+        this.documentTokenMap.set(document, extractTokens(document));
+      }
+
+      const completionItems: vscode.CompletionItem[] = [];
+      for (const token of this.documentTokenMap.get(document) || []) {
+        if (!['dfn'].includes(token.type)) {
+          continue;
+        }
         const item = new vscode.CompletionItem(
-          def,
+          token.name,
           vscode.CompletionItemKind.Text
         );
         item.detail = 'Current document';
-        return item;
+        completionItems.push(item);
       }
-    );
-    return completionItems;
+
+      resolve(completionItems);
+    });
   }
 
   provideCompletionItems(
@@ -105,23 +119,4 @@ export class BikeshedCompletionItemProvider
       });
     });
   }
-}
-
-function extractDefinitions(text: string): string[] {
-  const interestedTags = new Set<string>(['dfn', 'var']);
-  const definitionRegex =
-    /<(?<tag>[a-zA-Z][a-zA-Z0-9]*)[^>]*>(?<text>[^<]*)<\/\k<tag>>/g;
-  const definitions = new Set<string>();
-  let match: RegExpExecArray | null;
-  while ((match = definitionRegex.exec(text)) !== null) {
-    if (
-      match.groups &&
-      match.groups.tag &&
-      interestedTags.has(match.groups.tag)
-    ) {
-      // TODO: do more involved processing of each tag later.
-      definitions.add(match.groups.text);
-    }
-  }
-  return Array.from(definitions);
 }
