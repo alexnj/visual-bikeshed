@@ -1,19 +1,17 @@
 import {
   createConnection,
-  TextDocuments,
   ProposedFeatures,
   InitializeParams,
   InitializeResult,
   TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 import CompletionManager from './completion-manager';
-
+import { DocumentManager } from './document-manager';
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 let connection = createConnection(ProposedFeatures.all);
 
-// Create a simple text document manager.
-let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+// Create an instance of our text document manager.
+const documents = new DocumentManager();
 
 connection.onInitialize((params: InitializeParams) => {
   const result: InitializeResult = {
