@@ -1,10 +1,13 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "module": "commonjs",
-    "target": "es6",
     "outDir": "out",
     "rootDir": "src",
-    "strict": true
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2018"
   },
   "include": ["src"]
 }

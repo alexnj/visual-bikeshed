@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { extractTokens, type Token } from './token-extractor';
 import { LanguageClient } from 'vscode-languageclient/node';
+import { DocumentManager } from './document-manager';
 
 type CompletionRPCItem = {
   label: string;
@@ -17,14 +18,9 @@ export class BikeshedCompletionItemProvider
   implements vscode.CompletionItemProvider
 {
   private readonly client: LanguageClient;
-  private documentTokenMap: WeakMap<vscode.TextDocument, Token[]>;
 
-  public constructor(
-    client: LanguageClient,
-    tokenMap: WeakMap<vscode.TextDocument, Token[]>
-  ) {
+  public constructor(client: LanguageClient) {
     this.client = client;
-    this.documentTokenMap = tokenMap;
   }
 
   async fetchLanguageCompletion(
@@ -60,13 +56,9 @@ export class BikeshedCompletionItemProvider
     input: string
   ): Promise<vscode.CompletionItem[]> {
     return new Promise((resolve, reject) => {
-      if (!this.documentTokenMap.has(document)) {
-        // This document has not been processed.
-        this.documentTokenMap.set(document, extractTokens(document));
-      }
-
+      const bsDoc = DocumentManager.get(document);
       const completionItems: vscode.CompletionItem[] = [];
-      for (const token of this.documentTokenMap.get(document) || []) {
+      for (const token of bsDoc.getTokens()) {
         if (!['dfn'].includes(token.type)) {
           continue;
         }

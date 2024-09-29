@@ -5,10 +5,8 @@ import {
   deactivateLanguageClient,
 } from './extension-language-client';
 import { BikeshedCompletionItemProvider } from './local-completion-item-provider';
-import { extractTokens, type Token } from './token-extractor';
 import { BikeshedDocumentSymbolProvider } from './document-symbol-provider';
-
-const documentTokens = new WeakMap<vscode.TextDocument, Token[]>();
+import { DocumentManager } from './document-manager';
 
 export function activate(context: vscode.ExtensionContext) {
   activatePreview(context);
@@ -18,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       { scheme: 'file', language: 'bikeshed' },
-      new BikeshedCompletionItemProvider(languageClient, documentTokens),
+      new BikeshedCompletionItemProvider(languageClient),
       '{',
       '[',
       '|'
@@ -32,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerDocumentSymbolProvider(
       { language: 'bikeshed' },
-      new BikeshedDocumentSymbolProvider(documentTokens)
+      new BikeshedDocumentSymbolProvider()
     )
   );
 }
@@ -46,6 +44,5 @@ function handleTextDocumentChange(event: vscode.TextDocumentChangeEvent) {
   if (document.languageId !== 'bikeshed') {
     return;
   }
-
-  documentTokens.set(document, extractTokens(document));
+  DocumentManager.get(document).refresh();
 }

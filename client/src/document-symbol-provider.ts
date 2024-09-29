@@ -1,28 +1,18 @@
 import * as vscode from 'vscode';
-import { extractTokens, type Token } from './token-extractor';
+import { DocumentManager } from './document-manager';
 
 export class BikeshedDocumentSymbolProvider
   implements vscode.DocumentSymbolProvider
 {
-  private documentTokenMap: WeakMap<vscode.TextDocument, Token[]>;
-
-  constructor(documentTokenMap: WeakMap<vscode.TextDocument, Token[]>) {
-    this.documentTokenMap = documentTokenMap;
-  }
-
   public provideDocumentSymbols(
     document: vscode.TextDocument,
     token: vscode.CancellationToken
   ): Thenable<vscode.SymbolInformation[]> {
     return new Promise((resolve, reject) => {
-      if (!this.documentTokenMap.has(document)) {
-        // This document has not been processed.
-        this.documentTokenMap.set(document, extractTokens(document));
-      }
+      const bsDoc = DocumentManager.get(document);
+      const symbols: vscode.SymbolInformation[] = [];
 
-      var symbols: vscode.SymbolInformation[] = [];
-
-      for (const token of this.documentTokenMap.get(document) || []) {
+      for (const token of bsDoc.getTokens()) {
         if (['dfn'].includes(token.type)) {
           symbols.push(
             new vscode.SymbolInformation(

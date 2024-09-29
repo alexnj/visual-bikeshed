@@ -22,9 +22,6 @@
     "webref",
     "w3c"
   ],
-  "activationEvents": [
-    "onLanguage:bikeshed"
-  ],
   "main": "./client/out/extension",
   "contributes": {
     "commands": [
