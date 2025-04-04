@@ -98,6 +98,7 @@ export function activatePreview(context: vscode.ExtensionContext) {
         vscode.ViewColumn.Beside,
         {
           enableScripts: true,
+          enableFindWidget: true,
         }
       );
 
