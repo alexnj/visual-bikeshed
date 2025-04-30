@@ -35,8 +35,14 @@ class CompletionManager {
   }
 
   constructor() {
-    const data = fs.readFileSync(path.join(__dirname, '/output.json'), 'utf8');
-    this.items = JSON.parse(data);
+    const outputJsonPath = path.join(__dirname, '/output.json');
+    try {
+      const data = fs.readFileSync(outputJsonPath, 'utf8');
+      this.items = JSON.parse(data);
+    } catch (error: any) {
+      console.warn(`Failed to read ${outputJsonPath}`);
+      this.items = [];
+    }
   }
 
   complete(keyword: string): CompletionItem[] {
