@@ -2,7 +2,7 @@
   "name": "visual-bikeshed",
   "displayName": "Visual Bikeshed",
   "description": "Language support, autocompletion, side-by-side preview and other features for Bikeshed spec authors.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.92.0"
   },
