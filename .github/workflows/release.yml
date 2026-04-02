@@ -2,9 +2,9 @@ name: Release Extension
 
 on:
   push:
-    branches: ['main']
+    branches: [ "main" ]
   pull_request:
-    branches: ['main']
+    branches: [ "main" ]
 
 permissions:
   contents: write
@@ -14,31 +14,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+    - name: Install dependencies
+      run: npm install
 
-      - name: Run tests
-        run: xvfb-run --auto-servernum npm test
+    - name: Run tests
+      run: xvfb-run --auto-servernum npm test
 
-      - name: Compile
-        run: npm run compile
+    - name: Compile
+      run: npm run compile
 
-      - name: Package extension
-        run: npx @vscode/vsce package -o visual-bikeshed.vsix
+    - name: Package extension
+      run: npx @vscode/vsce package -o visual-bikeshed.vsix
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: extension-artifact
-          path: visual-bikeshed.vsix
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: extension-artifact
+        path: visual-bikeshed.vsix
 
   publish-release:
     runs-on: ubuntu-latest
@@ -46,27 +46,27 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: extension-artifact
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: extension-artifact
 
-      - name: Get version
-        id: get_version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+    - name: Get version
+      id: get_version
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Create or Update Release
-        uses: ncipollo/release-action@v1
-        with:
-          allowUpdates: true
-          artifacts: 'visual-bikeshed.vsix'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: v${{ env.VERSION }}
-          name: Release v${{ env.VERSION }}
-          body: 'Automated release from CI'
-          draft: false
-          prerelease: false
+    - name: Create or Update Release
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        artifacts: "visual-bikeshed.vsix"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: v${{ env.VERSION }}
+        name: Release v${{ env.VERSION }}
+        body: "Automated release from CI"
+        draft: false
+        prerelease: false
