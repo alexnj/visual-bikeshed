@@ -9,7 +9,7 @@ This plugin is currently in Beta and under active development. There may be bugs
 ## Features
 
 - Bikeshed side-by-side preview within Visual Studio Code. Bring up Visual Studio Code [Command Palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) (⇧⌘P on Macs) and select `Open Bikeshed Preview` while editing a Bikeshed file.
-- Compilation support via [local Bikeshed install](https://speced.github.io/bikeshed/#installing) or through [a remote CGI](https://api.csswg.org/bikeshed/).
+- Compilation support via [local Bikeshed install](https://speced.github.io/bikeshed/#installing) or through the [W3C Spec Generator](https://www.w3.org/publications/spec-generator/).
 - IntelliSense / autocompletion support for W3C webref definitions and definitions within the document.
 
 ## Requirements
@@ -23,7 +23,7 @@ This extension contributes the following settings:
 - `visualBikeshed.autoUpdate`: Automatically update the preview when the document changes.
 - `visualBikeshed.compilerOption`: Selects a compilation method (URL or Bikeshed binary path).
 - `visualBikeshed.commandPath`: Path to the Bikeshed binary, for local compilation.
-- `visualBikeshed.processorUrl`: URL of the Bikeshed processor (defaults to `https://api.csswg.org/bikeshed/`).
+- `visualBikeshed.processorUrl`: URL of the Bikeshed processor (defaults to `https://www.w3.org/publications/spec-generator/`).
 
 ## Known Issues
 
