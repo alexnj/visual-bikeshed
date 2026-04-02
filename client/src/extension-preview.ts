@@ -11,6 +11,12 @@ import { parseStringPromise } from 'xml2js';
 
 const PREVIEW_UPDATE_DEBOUNCE_TIME = 500;
 
+type SpecGeneratorError = {
+  lineNum: string | null;
+  messageType: 'fatal' | 'warning' | 'linkerror' | 'message' | 'failure';
+  text: string;
+};
+
 type BikeshedErrorOutput = {
   root: {
     warning?: string[];
@@ -39,7 +45,7 @@ async function updateWebview(
       const commandPath = config.get<string>('commandPath', 'bikeshed');
       const processorUrl = config.get<string>(
         'processorUrl',
-        'https://api.csswg.org/bikeshed/'
+        'https://www.w3.org/publications/spec-generator/'
       );
       let htmlContent = '';
       try {
@@ -166,6 +172,19 @@ async function parseErrors(xml: string): Promise<BikeshedErrorOutput> {
   }
 }
 
+function notifyUserOfJSONErrors(errors: SpecGeneratorError[]): void {
+  for (const err of errors) {
+    let status: VSCodeNotifyType = 'info';
+    if (err.messageType === 'fatal' || err.messageType === 'failure') {
+      status = 'error';
+    } else if (err.messageType === 'warning') {
+      status = 'warning';
+    }
+    const msg = `${err.lineNum ? `[${err.lineNum}] ` : ''}${err.text}`;
+    notify(msg, status);
+  }
+}
+
 function notifyUserOfErrors(errors: BikeshedErrorOutput): void {
   const messages: [string, VSCodeNotifyType][] = [];
   if (errors.root.fatal) {
@@ -216,35 +235,45 @@ async function getProcessedContent(
 ): Promise<string> {
   const formData = new FormData();
   formData.append('file', new Blob([content]), 'file.bs');
-  formData.append('force', '1');
-  const response = await axios.post(processorUrl, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-    onUploadProgress: (progressEvent) => {
-      const percentCompleted = Math.round(
-        progressEvent.total
-          ? (progressEvent.loaded / progressEvent.total) * 50
-          : 0
-      );
-      progress.report({
-        increment: percentCompleted,
-        message: `Uploading to ${processorUrl}`,
-      });
-    },
-    onDownloadProgress: (progressEvent) => {
-      const percentCompleted = Math.round(
-        progressEvent.total
-          ? (progressEvent.loaded / progressEvent.total) * 50
-          : 0
-      );
-      progress.report({
-        increment: 50 + percentCompleted,
-        message: `Downloading compiled output from ${processorUrl}`,
-      });
-    },
-  });
-  return response.data;
+  formData.append('type', 'bikeshed-spec');
+
+  try {
+    const response = await axios.post(processorUrl, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round(
+          progressEvent.total
+            ? (progressEvent.loaded / progressEvent.total) * 50
+            : 0
+        );
+        progress.report({
+          increment: percentCompleted,
+          message: `Uploading to ${processorUrl}`,
+        });
+      },
+      onDownloadProgress: (progressEvent) => {
+        const percentCompleted = Math.round(
+          progressEvent.total
+            ? (progressEvent.loaded / progressEvent.total) * 50
+            : 0
+        );
+        progress.report({
+          increment: 50 + percentCompleted,
+          message: `Downloading compiled output from ${processorUrl}`,
+        });
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 422) {
+      const apiErrors = error.response.data as SpecGeneratorError[];
+      notifyUserOfJSONErrors(apiErrors);
+      throw new Error('Compilation failed with errors.');
+    }
+    throw error;
+  }
 }
 
 async function getProcessedContentWithShell(

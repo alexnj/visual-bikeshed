@@ -80,7 +80,7 @@
         },
         "visualBikeshed.processorUrl": {
           "type": "string",
-          "default": "https://api.csswg.org/bikeshed/",
+          "default": "https://www.w3.org/publications/spec-generator/",
           "description": "URL of the Bikeshed processor."
         }
       }
