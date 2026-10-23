@@ -1,0 +1,62 @@
+name: Preview
+
+# A preview build of each PR, as a .vsix to install by hand, once a
+# maintainer has approved it: the job runs in the `preview` environment,
+# whose required reviewers approve each run before it starts.
+on:
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Without a `preview` environment that asks for a reviewer, GitHub would make
+  # one with no rules on the first run, and the build would go ahead
+  # unapproved. So the build waits on this check.
+  approval-required:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - name: The preview environment asks for a reviewer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reviewers=$(gh api "repos/${{ github.repository }}/environments/preview" \
+            --jq '[.protection_rules[]? | select(.type == "required_reviewers")] | length') \
+            || { echo "::error::There's no 'preview' environment: make one, with required reviewers (Settings → Environments)."; exit 1; }
+          if [ "$reviewers" -eq 0 ]; then
+            echo "::error::The 'preview' environment has no required reviewers, so a preview would build unapproved: add them (Settings → Environments → preview)."
+            exit 1
+          fi
+
+  preview:
+    needs: approval-required
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package the preview
+        run: npx @vscode/vsce package -o "visual-bikeshed-pr${{ github.event.pull_request.number }}.vsix"
+
+      - name: Upload the preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-bikeshed-pr${{ github.event.pull_request.number }}
+          path: visual-bikeshed-pr${{ github.event.pull_request.number }}.vsix
+          retention-days: 14
