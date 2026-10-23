@@ -320,13 +320,48 @@ async function getProcessedContentWithShell(
   });
 }
 
-function getWebviewContent(htmlContent: string): string {
+/**
+ * VS Code puts its own default styles into every webview, ahead of anything
+ * the page brings. They're meant for pages written for the editor: `code`,
+ * for one, gets the theme's preformatted-text colours, padding and rounded
+ * corners, which in a dark theme draws a near-black box around every bit of
+ * code and every definition in a spec (#3). A spec's stylesheet doesn't set
+ * those properties, so VS Code's would stand. This puts each of them back to
+ * the browser's own value. It comes after VS Code's styles and before the
+ * spec's, with the same selectors, so it undoes VS Code's and nothing else:
+ * wherever the spec's stylesheet sets one of these, the spec's still wins.
+ */
+export const RESET_VSCODE_DEFAULT_STYLES = `
+body {
+  background-color: revert; color: revert; font-family: revert;
+  font-weight: revert; font-size: revert; margin: revert; padding: revert;
+}
+img, video { max-width: revert; max-height: revert; }
+a, a code { color: revert; }
+p > a { text-decoration: revert; }
+a:hover { color: revert; }
+a:focus, input:focus, select:focus, textarea:focus { outline: revert; outline-offset: revert; }
+code {
+  font-family: revert; color: revert; background-color: revert;
+  padding: revert; border-radius: revert;
+}
+pre code { padding: revert; }
+blockquote { background: revert; border-color: revert; }
+kbd {
+  background-color: revert; color: revert; border-style: revert;
+  border-width: revert; border-radius: revert; border-color: revert;
+  box-shadow: revert; padding: revert; vertical-align: revert;
+}
+`;
+
+export function getWebviewContent(htmlContent: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bikeshed Preview</title>
+  <style>${RESET_VSCODE_DEFAULT_STYLES}</style>
 </head>
 <body>
   ${htmlContent}
