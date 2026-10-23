@@ -1,5 +1,9 @@
 import { defineConfig } from '@vscode/test-cli';
 
 export default defineConfig({
-  files: 'out/test/**/*.test.js',
+  // The client's tests, as `tsc -b` compiles them.
+  files: 'client/out/test/**/*.test.js',
+  // Only this extension, whatever else the machine has installed.
+  launchArgs: ['--disable-extensions'],
+  mocha: { timeout: 60000 },
 });
